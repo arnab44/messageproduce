@@ -7,10 +7,13 @@ import com.tcpmanager.Message.Header;
 import com.tcpmanager.Message.Message;
 
 import java.io.*;
+import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,11 +40,14 @@ public class Producer
     String path = null;
     private BrokerClient brokerClient;
     private ObjectOutputStream os;
+    private Socket socket;
     public Producer(String path) {
         this.path = path;
         try {
-            this.brokerClient = BrokerClient.getBrokerClient();
-            os = brokerClient.getObjectOutputStream();
+            socket = new Socket("127.0.0.1", 5002);
+            os= new ObjectOutputStream(socket.getOutputStream());
+           // this.brokerClient = BrokerClient.getBrokerClient();
+           // os = brokerClient.getObjectOutputStream();
 
             System.out.println("Connected to Message broker");
         }
@@ -53,6 +59,7 @@ public class Producer
     // constructor to put ip address and port
     public void readAndSendMessages()
     {
+        System.out.println("Producer started at "+ new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()));
         List<Message> messageList = null;
         try (Stream<Path> walk = Files.walk(Paths.get(this.path))) {
 
@@ -62,7 +69,7 @@ public class Producer
         catch(IOException e) {
             System.out.println(e.toString());
         }
-        Collections.sort(messageList);
+        //Collections.sort(messageList);
         Message lastMessage = Message.builder()
                 .header(Header.builder()
                         .size(-1)
@@ -76,6 +83,7 @@ public class Producer
         {
             try
             {
+             //   System.out.println(message.getHeader().getFileName());
                 os.writeObject(message);
                 os.flush();
             }
@@ -88,13 +96,16 @@ public class Producer
         // close the connection
         try
         {
-          brokerClient.getSocket().close();
-          brokerClient.getObjectOutputStream().close();
+            socket.close();
+            os.close();
+//          brokerClient.getSocket().close();
+  //        brokerClient.getObjectOutputStream().close();
         }
         catch(IOException i)
         {
             System.out.println(i);
         }
+        System.out.println("Producer finished at "+ new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()));
     }
 
         public static Message filetoMessage(Path p) {
