@@ -44,7 +44,7 @@ public class Producer
     public Producer(String path) {
         this.path = path;
         try {
-            socket = new Socket("127.0.0.1", 5002);
+            socket = new Socket("35.175.127.44", 5002);
             os= new ObjectOutputStream(socket.getOutputStream());
            // this.brokerClient = BrokerClient.getBrokerClient();
            // os = brokerClient.getObjectOutputStream();
