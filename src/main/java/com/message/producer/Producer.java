@@ -135,7 +135,7 @@ public class Producer
     public  static boolean sendMessage(Message message) {
         try
         {
-        //    System.out.println(message.getHeader().getFileName());
+         //  System.out.println(message.getHeader().getFileName());
             os.writeObject(message);
             os.flush();
             return true;
