@@ -60,7 +60,7 @@ public class Producer
     public void readAndSendMessages()
     {
         System.out.println("Producer started at "+ new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()));
-        List<Message> messageList = null;
+      //  List<Message> messageList = null;
         try (Stream<Path> walk = Files.walk(Paths.get(this.path))) {
 
             /*messageList =*/ walk.filter(Files::isRegularFile)
@@ -120,6 +120,14 @@ public class Producer
             System.out.println("Error while reading file " + ex.toString());
         }
         finally {
+            long minRunningMemory = (5*1024*1024);
+
+            Runtime runtime = Runtime.getRuntime();
+        //    System.out.println("free= "+runtime.freeMemory() +"  max= "+ runtime.maxMemory());
+            if(runtime.freeMemory()<minRunningMemory) {
+                System.out.println("GC");
+                System.gc();
+            }
 
 
             return Message.builder().header(
@@ -138,6 +146,14 @@ public class Producer
          //  System.out.println(message.getHeader().getFileName());
             os.writeObject(message);
             os.flush();
+            long minRunningMemory = (5*1024*1024);
+
+            Runtime runtime = Runtime.getRuntime();
+           // System.out.println("free= "+runtime.freeMemory() +"  max= "+ runtime.maxMemory());
+            if(runtime.freeMemory()<minRunningMemory) {
+                System.out.println("GC");
+                System.gc();
+            }
             return true;
         }
         catch(IOException e)
