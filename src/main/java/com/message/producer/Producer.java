@@ -140,9 +140,9 @@ public class Producer
             os.flush();
             return true;
         }
-        catch(IOException i)
+        catch(IOException e)
         {
-            System.out.println(i);
+            System.out.println("Exception while sending message "+e);
         }
         return true;
     }
