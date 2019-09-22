@@ -39,7 +39,7 @@ public class Producer
 {
     String path = null;
     private BrokerClient brokerClient;
-    private ObjectOutputStream os;
+    private static  ObjectOutputStream os;
     private Socket socket;
     public Producer(String path) {
         this.path = path;
@@ -63,8 +63,8 @@ public class Producer
         List<Message> messageList = null;
         try (Stream<Path> walk = Files.walk(Paths.get(this.path))) {
 
-            messageList = walk.filter(Files::isRegularFile)
-                    .map(x -> x.toAbsolutePath()).map(Producer::filetoMessage).collect(Collectors.toList());
+            /*messageList =*/ walk.filter(Files::isRegularFile)
+                    .map(x -> x.toAbsolutePath()).map(Producer::filetoMessage).forEach(Producer::sendMessage);//collect(Collectors.toList());
         }
         catch(IOException e) {
             System.out.println(e.toString());
@@ -76,10 +76,11 @@ public class Producer
                         .build())
                 .build();
 
-        messageList.add(lastMessage);
+        //messageList.add(lastMessage);
+        sendMessage(lastMessage);
 
         //sending messages
-        for (Message message :messageList)
+       /* for (Message message :messageList)
         {
             try
             {
@@ -91,7 +92,7 @@ public class Producer
             {
                 System.out.println(i);
             }
-        }
+        }*/
 
         // close the connection
         try
@@ -118,13 +119,32 @@ public class Producer
         } catch (IOException ex) {
             System.out.println("Error while reading file " + ex.toString());
         }
-        return Message.builder().header(
-                Header.builder()
-                        .size(contents.length())
-                        .fileName(p.getFileName().toString())
-                        .build())
-                .payLoad(contents)
-                .build();
+        finally {
+
+
+            return Message.builder().header(
+                    Header.builder()
+                            .size(contents.length())
+                            .fileName(p.getFileName().toString())
+                            .build())
+                    .payLoad(contents)
+                    .build();
+        }
+    }
+
+    public  static boolean sendMessage(Message message) {
+        try
+        {
+            System.out.println(message.getHeader().getFileName());
+            os.writeObject(message);
+            os.flush();
+            return true;
+        }
+        catch(IOException i)
+        {
+            System.out.println(i);
+        }
+        return true;
     }
 
 }
